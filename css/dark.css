@@ -47,7 +47,7 @@ Default CSS
   transition: 0.4s;
   -webkit-box-shadow: 0 0px 15px #2020203d;
           box-shadow: 0 0px 15px #2020203d;
-  background: url(../../assets/images/night.png);
+  background: url(../images/night.png);
   background-repeat: no-repeat;
   background-position: center;
 }
