@@ -1,62 +1,79 @@
 /*==============================================================*/
-// Contact Form  JS
+// Contact Form JS — FormSubmit.co AJAX
 /*==============================================================*/
 (function ($) {
-    "use strict"; // Start of use strict
+    "use strict";
+
     $("#contactForm").validator().on("submit", function (event) {
         if (event.isDefaultPrevented()) {
-            // handle the invalid form...
             formError();
-            submitMSG(false, "Did you fill in the form properly?");
+            submitMSG(false, "Por favor completa todos los campos correctamente.");
         } else {
-            // everything looks good!
             event.preventDefault();
             submitForm();
         }
     });
 
-
-    function submitForm(){
-        // Initiate Variables With Form Content
-        var name = $("#name").val();
-        var email = $("#email").val();
-        var msg_subject = $("#msg_subject").val();
-        var phone_number = $("#phone_number").val();
+    function submitForm() {
+        var name    = $("#name").val();
+        var email   = $("#email").val();
+        var phone   = $("#phone_number").val();
+        var subject = $("#msg_subject").val();
         var message = $("#message").val();
 
+        var $btn = $("#contactForm button[type='submit']");
+        $btn.text("Enviando...").prop("disabled", true);
 
-        $.ajax({
-            type: "POST",
-            url: "assets/php/form-process.php",
-            data: "name=" + name + "&email=" + email + "&msg_subject=" + msg_subject + "&phone_number=" + phone_number + "&message=" + message,
-            success : function(text){
-                if (text == "success"){
-                    formSuccess();
-                } else {
-                    formError();
-                    submitMSG(false,text);
-                }
+        fetch("https://formsubmit.co/ajax/info@samtecnologia.com.co", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                "_subject": "Nuevo contacto desde SAM Servicios Integrales",
+                "_template": "table",
+                "Nombre": name,
+                "Correo": email,
+                "Telefono": phone,
+                "Asunto": subject,
+                "Mensaje": message
+            })
+        })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+            $btn.text("Enviar").prop("disabled", false);
+            if (data.success === "true" || data.success === true) {
+                formSuccess();
+            } else {
+                formError();
+                submitMSG(false, "No se pudo enviar el mensaje. Por favor inténtalo de nuevo.");
             }
+        })
+        .catch(function () {
+            $btn.text("Enviar").prop("disabled", false);
+            formError();
+            submitMSG(false, "Error de conexión. Por favor inténtalo de nuevo o escríbenos al WhatsApp.");
         });
     }
 
-    function formSuccess(){
+    function formSuccess() {
         $("#contactForm")[0].reset();
-        submitMSG(true, "Message Submitted!")
+        submitMSG(true, "¡Mensaje enviado! Nos contactaremos contigo muy pronto.");
     }
 
-    function formError(){
-        $("#contactForm").removeClass().addClass('shake animated').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
-            $(this).removeClass();
-        });
+    function formError() {
+        $("#contactForm")
+            .removeClass()
+            .addClass("shake animated")
+            .one("webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend", function () {
+                $(this).removeClass();
+            });
     }
 
-    function submitMSG(valid, msg){
-        if(valid){
-            var msgClasses = "h4 tada animated text-success";
-        } else {
-            var msgClasses = "h4 text-danger";
-        }
+    function submitMSG(valid, msg) {
+        var msgClasses = valid ? "h4 tada animated text-success" : "h4 text-danger";
         $("#msgSubmit").removeClass().addClass(msgClasses).text(msg);
     }
-}(jQuery)); // End of use strict
+
+}(jQuery));
