@@ -33,6 +33,7 @@
             body: JSON.stringify({
                 "_subject": "Nuevo contacto desde SAM Servicios Integrales",
                 "_template": "table",
+                "_captcha": "false",
                 "Nombre": name,
                 "Correo": email,
                 "Telefono": phone,
@@ -43,14 +44,25 @@
         .then(function (response) { return response.json(); })
         .then(function (data) {
             $btn.text("Enviar").prop("disabled", false);
+
             if (data.success === "true" || data.success === true) {
                 formSuccess();
             } else {
                 formError();
-                submitMSG(false, "No se pudo enviar el mensaje. Por favor inténtalo de nuevo.");
+                var serverMsg = (data.message || "").toLowerCase();
+                var userMsg;
+
+                if (serverMsg.indexOf("activation") !== -1 || serverMsg.indexOf("activate") !== -1) {
+                    userMsg = "El formulario necesita activación. Por favor revisa el correo info@samtecnologia.com.co y haz clic en el enlace de activación de FormSubmit.";
+                } else if (serverMsg.indexOf("verify") !== -1) {
+                    userMsg = "Por favor verifica el correo info@samtecnologia.com.co para activar el envío de mensajes.";
+                } else {
+                    userMsg = "No se pudo enviar el mensaje. Por favor inténtalo de nuevo o contáctanos por WhatsApp.";
+                }
+                submitMSG(false, userMsg);
             }
         })
-        .catch(function () {
+        .catch(function (err) {
             $btn.text("Enviar").prop("disabled", false);
             formError();
             submitMSG(false, "Error de conexión. Por favor inténtalo de nuevo o escríbenos al WhatsApp.");
